@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Fire Style Game</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#151515;color:white;
+ font-family:Arial;text-align:center;
+ overflow:hidden;
+}
+h2{color:orange;margin:12px}
+#game{
+ background:linear-gradient(#387b43,#17432b);
+ display:block;margin:auto;
+ border:3px solid white;
+ max-width:100%;touch-action:none;
+}
+#info{padding:8px;font-size:18px}
+button{
+ background:orange;color:black;border:0;
+ padding:13px 22px;border-radius:10px;
+ font-size:17px;font-weight:bold;margin:5px;
+}
+</style>
+</head>
+<body>
+
+<h2>🔥 BATTLE SHOOTER 🔥</h2>
+<div id="info">
+ Score: <span id="score">0</span>
+ ❤️ Health: <span id="health">100</span>
+</div>
+
+<canvas id="game" width="360" height="500"></canvas>
+
+<div>
+<button onclick="move(-1)">⬅ LEFT</button>
+<button onclick="shoot()">🔫 FIRE</button>
+<button onclick="move(1)">RIGHT ➡</button>
+</div>
+<button onclick="restart()">🔄 RESTART</button>
+
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+
+let player={x:180,y:430};
+let enemies=[],bullets=[];
+let score=0,health=100,gameOver=false;
+let direction=0;
+
+function spawn(){
+ if(!gameOver){
+ enemies.push({x:20+Math.random()*320,y:-20});
+ }
+}
+setInterval(spawn,1000);
+
+function move(d){
+ direction=d;
+ player.x+=d*20;
+ player.x=Math.max(15,Math.min(345,player.x));
+}
+
+function shoot(){
+ if(!gameOver){
+ bullets.push({x:player.x,y:player.y-15});
+ }
+}
+
+function drawPlayer(){
+ ctx.fillStyle="#00d9ff";
+ ctx.fillRect(player.x-13,player.y-15,26,30);
+ ctx.fillStyle="white";
+ ctx.fillRect(player.x-4,player.y-25,8,12);
+}
+
+function draw(){
+ ctx.clearRect(0,0,360,500);
+
+ // Grass
+ ctx.fillStyle="#245b35";
+ ctx.fillRect(0,0,360,500);
+
+ // Player
+ drawPlayer();
+
+ // Bullets
+ ctx.fillStyle="yellow";
+ bullets.forEach(b=>{
+ b.y-=8;
+ ctx.fillRect(b.x-3,b.y,6,12);
+ });
+
+ // Enemies
+ ctx.fillStyle="red";
+ enemies.forEach(e=>{
+ e.y+=2;
+ ctx.fillRect(e.x-12,e.y-12,24,24);
+ });
+
+ // Collision
+ bullets=bullets.filter(b=>{
+ let hit=false;
+ enemies=enemies.filter(e=>{
+ if(Math.abs(b.x-e.x)<18 && Math.abs(b.y-e.y)<18){
+ hit=true;score+=10;
+ document.getElementById("score").textContent=score;
+ return false;
+ }
+ return true;
+ });
+ return !hit && b.y>0;
+ });
+
+ enemies=enemies.filter(e=>{
+ if(e.y>470){
+ health-=10;
+ document.getElementById("health").textContent=health;
+ return false;
+ }
+ return true;
+ });
+
+ if(health<=0){
+ gameOver=true;
+ ctx.fillStyle="white";
+ ctx.font="bold 35px Arial";
+ ctx.fillText("GAME OVER",65,250);
+ ctx.font="20px Arial";
+ ctx.fillText("Score: "+score,135,285);
+ return;
+ }
+
+ requestAnimationFrame(draw);
+}
+
+function restart(){
+ player.x=180;
+ enemies=[];bullets=[];
+ score=0;health=100;gameOver=false;
+ document.getElementById("score").textContent=0;
+ document.getElementById("health").textContent=100;
+ draw();
+}
+
+draw();
+</script>
+</body>
+</html>
